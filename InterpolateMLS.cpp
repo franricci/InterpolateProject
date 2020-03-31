@@ -26,14 +26,14 @@ void InterpolateMLS::AllocateArray(){
 void InterpolateMLS::FreeArray(){
 	delete [] Sol; Sol=nullptr;
 }
-void InterpolateMLS::Solve(pos *coord, dat *data, unsigned *BeginCell, unsigned *Partsincell){
+void InterpolateMLS::Solve(tfloat3 *coord, tfloat5 *data, unsigned *BeginCell, unsigned *Partsincell){
 	for(unsigned i=0; i<Nc; i++)
 		for(unsigned j=0; j<Nc; j++){
 			SolveBox(coord,data,BeginCell,Partsincell,i,j);
 		}
 }
 
-void InterpolateMLS::SolveBox(pos *coord, dat *data, unsigned *BeginCell, unsigned *Partsincell,unsigned i,unsigned j){
+void InterpolateMLS::SolveBox(tfloat3 *coord, tfloat5 *data, unsigned *BeginCell, unsigned *Partsincell,unsigned i,unsigned j){
 	unsigned i_1=i+q;
 	unsigned j_1=j+q;
 	double x1=i*dx;

@@ -16,8 +16,8 @@ int main(){
 
 	unsigned Np= bho.numberOfLines();
 	double mass=1.0/(Np);
-	pos *xyz = new pos[Np];
-	dat* asd = new dat[Np];
+	tfloat3 *xyz = new tfloat3[Np];
+	tfloat5 *asd = new tfloat5[Np];
 	bho.read_file(xyz,asd);
 	unsigned Nc=100;
 	unsigned hdp=2;
@@ -33,22 +33,28 @@ int main(){
 	div->SortPosition(xyz);
 	div->SortVariables(asd);
 
+//	std::ofstream file2;
+//		file2.open("file.dat");
+//		for (unsigned p=0; p<Np; p++){
+//			file2 << xyz[p].x << " "<< xyz[p].z << std::endl;
+//		}
+//		file2.close();
 
 
 
 
 	unsigned Np_per= div->CountPeriodicPart(q);
 	unsigned Np_total=Np+Np_per;
-	pos *coord 	= new pos[Np_total];
-	dat *data	= new dat[Np_total];
+	tfloat3 *coord 	= new tfloat3[Np_total];
+	tfloat5 *data	= new tfloat5[Np_total];
 
-	div->CopyPeriodicParticles(coord, xyz,data, asd,q);
-//	std::ofstream file2;
-//	file2.open("file.dat");
-//	for (unsigned p=0; p<Np_total; p++){
-//		file2 << coord[p].x << " "<<coord[p].z << std::endl;
-//	}
-//	file2.close();
+	div->OuterLoop(coord, xyz,data, asd,q);
+	std::ofstream file2;
+	file2.open("file.dat");
+	for (unsigned p=0; p<Np_total; p++){
+		file2 << coord[p].x << " "<<coord[p].z << std::endl;
+	}
+	file2.close();
 
 
 	div->FreeArrays();

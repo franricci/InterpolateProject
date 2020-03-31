@@ -1,4 +1,4 @@
-CXXFLAGS =	 -O0 -g -Wall -std=c++11 -lblas -llapacke -llapac -fmessage-length=0
+CXXFLAGS =	 -O0 -g -Wall -std=c++11 -lblas -llapacke -llapack -fmessage-length=0
 
 OBJS =		Interpolate.o CsvReader.o CellDiv.o InterpolateMLS.o
 

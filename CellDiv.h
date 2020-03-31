@@ -27,14 +27,15 @@ public:
 	unsigned 	*SortPartTemp=NULL;
 
 
-	void PreSort(pos *coord);
+	void PreSort(tfloat3 *coord);
 
 	CellDiv(unsigned nc, unsigned np,double l,double xmin);
-	void SortPosition(pos *vec);
-	void SortVariables(dat *vec);
+	void SortPosition(tfloat3 *vec);
+	void SortVariables(tfloat5 *vec);
 	int CountPeriodicPart(unsigned q);
 	void AllocateArray();
-	void CopyPeriodicParticles(pos* coord, pos *coord1, dat* data, dat* data1, unsigned q);
+	void OuterLoop(tfloat3* coord, tfloat3 *coord1, tfloat5* data, tfloat5* data1, unsigned q);
+	unsigned InnerLoop(tuint2 inn, tuint2 out, tfloat2 delta,tfloat3* coord, tfloat3 *coord1, tfloat5* data, tfloat5* data1,unsigned n);
 	void AllocateArrays();
 	void FreeArrays();
 	void ChangeNp(unsigned np);

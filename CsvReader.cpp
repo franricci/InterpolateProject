@@ -29,7 +29,7 @@ unsigned Csv_Reader::numberOfLines(){
 	}
 
 
-void Csv_Reader::read_file(pos* cord, dat* data){
+void Csv_Reader::read_file(tfloat3* cord, tfloat5* data){
 		std::ifstream myfile(FileName);
 		std::string line;
 

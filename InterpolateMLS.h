@@ -29,8 +29,8 @@ public:
 	InterpolateMLS(unsigned np, unsigned nc, unsigned qcell,double mass,double deltax,double H);
 	void AllocateArray();
 	void FreeArray();
-	void Solve(pos *coord, dat *data, unsigned *BeginCell, unsigned *Partsincell);
-	void SolveBox(pos *coord, dat *data, unsigned *BeginCell, unsigned *Partsincell,unsigned i,unsigned j);
+	void Solve(tfloat3 *coord, tfloat5 *data, unsigned *BeginCell, unsigned *Partsincell);
+	void SolveBox(tfloat3 *coord, tfloat5 *data, unsigned *BeginCell, unsigned *Partsincell,unsigned i,unsigned j);
 	double getKernelWedland(double rr2,double h);
 	virtual ~InterpolateMLS();
 };

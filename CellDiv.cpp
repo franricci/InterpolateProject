@@ -33,7 +33,7 @@ void CellDiv::FreeArrays(){
 }
 
 
-void CellDiv::PreSort(pos *coord){
+void CellDiv::PreSort(tfloat3 *coord){
 	memset(PartsincellTemp,0,sizeof(unsigned)*Nc*Nc);
 	for (unsigned p=0; p<Np; p++){
 			double x=coord[p].x-xMin;
@@ -66,151 +66,82 @@ void CellDiv::PreSort(pos *coord){
 
 }
 
-void CellDiv::SortPosition(pos *vec){
-	pos *SortedVector = new pos[Np];
+void CellDiv::SortPosition(tfloat3 *vec){
+	tfloat3 *SortedVector = new tfloat3[Np];
 	for (unsigned p=0; p<Np; p++) SortedVector[p]=vec[SortPartTemp[p]];
-	memcpy(vec,SortedVector,sizeof(pos)*Np);
+	memcpy(vec,SortedVector,sizeof(tfloat3)*Np);
 }
 
-void CellDiv::SortVariables(dat *vec){
-	dat *SortedVector = new dat[Np];
+void CellDiv::SortVariables(tfloat5 *vec){
+	tfloat5 *SortedVector = new tfloat5[Np];
 	for (unsigned p=0; p<Np; p++) SortedVector[p]=vec[SortPartTemp[p]];
-	memcpy(vec,SortedVector,sizeof(dat)*Np);
+	memcpy(vec,SortedVector,sizeof(tfloat5)*Np);
 }
 
 int CellDiv::CountPeriodicPart(unsigned q){
-	unsigned sum=0;
-	for (unsigned i=0; i<q; i++)
-		for(unsigned j=0; j<Nc; j++) {
-			unsigned index=i+j*Nc;
-			unsigned index1=(Nc-1)-i+j*Nc;
-			sum +=PartsincellTemp[index];
-			sum +=PartsincellTemp[index1];
-		}
-	for (unsigned j=0; j<q; j++)
-			for(unsigned i=0; i<Nc; i++) {
-				unsigned index=i+j*Nc;
-				unsigned index1=i+(Nc-1-j)*Nc;
-				sum +=PartsincellTemp[index];
-				sum +=PartsincellTemp[index1];
-			}
-	for (unsigned i=0; i<q; i++)
-			for(unsigned j=0; j<q; j++) {
-					unsigned index=i+j*Nc;
-					unsigned index1=(Nc-1)-i+j*Nc;
-					sum +=PartsincellTemp[index];
-					sum +=PartsincellTemp[index1];
-			}
-	for (unsigned i=0; i<q; i++)
-				for(unsigned j=Nc-q; j<Nc; j++) {
-						unsigned index=i+j*Nc;
-						unsigned index1=(Nc-1)-i+j*Nc;
-						sum +=PartsincellTemp[index];
-						sum +=PartsincellTemp[index1];
-				}
-	return sum;
+	tuint2 lim[3];
+		double del[3];
+		tfloat2 delta;
+		unsigned n=0;
+
+		lim[0] = TUint2(0,q); lim[1] = TUint2(Nc-q,Nc); lim[2] = TUint2(0,Nc);
+
+		del[0] =L; del[1]=-L; del[2]=0.0;
+
+		for (unsigned i=0; i< 3; i++)
+			for (unsigned j=0; j<3; j++){
+
+				if(i==2 && j==2) break;
+
+				for (unsigned k=lim[i].x; k < lim[i].y; k++)
+					for (unsigned m=lim[j].x; m<lim[j].y; m++){
+
+						unsigned pmin=BeginCellTemp[i+j*Nc];
+						unsigned pmax=pmin+PartsincellTemp[i+j*Nc];
+
+						for (unsigned p=pmin; p<pmax; p++)n++;
+					}
+
+		   }
+
+		return n;
 }
 
-void CellDiv::CopyPeriodicParticles(pos* coord, pos *coord1, dat* data, dat* data1, unsigned q){
-	memcpy(coord,coord1,sizeof(pos)*Np);
-	memcpy(data,data1,sizeof(dat)*Np);
+
+void CellDiv::OuterLoop(tfloat3* coord, tfloat3 *coord1, tfloat5* data, tfloat5* data1, unsigned q){
+	tuint2 lim[3];
+	double del[3];
+	tfloat2 delta;
 	unsigned n=0;
-	for (unsigned i=0; i<q; i++)
-			for(unsigned j=0; j<Nc; j++) {
-				unsigned index=i+j*Nc;
-				unsigned index1=(Nc-1)-i+j*Nc;
-				unsigned pmin=BeginCellTemp[index];
-				unsigned pmax=pmin+PartsincellTemp[index];
-				unsigned pmin1=BeginCellTemp[index1];
-				unsigned pmax1=pmin1+PartsincellTemp[index1];
 
-				for (unsigned p=pmin; p<pmax; p++){
-					coord[Np+n].x=coord1[p].x+L;
-					coord[Np+n].z=coord1[p].z;
-					data[Np+n]=data1[p];
-					n++;
-				}
+	lim[0] = TUint2(0,q); lim[1] = TUint2(Nc-q,Nc); lim[2] = TUint2(0,Nc);
 
-				for (unsigned p=pmin1; p<pmax1; p++){
-					coord[Np+n].x=coord1[p].x-L;
-					coord[Np+n].z=coord1[p].z;
-					data[Np+n]=data1[p];
-					n++;
-				}
+	del[0] =L; del[1]=-L; del[2]=0.0;
 
+	for (unsigned i=0; i< 3; i++)
+		for (unsigned j=0; j<3; j++){
+			delta.x=del[i];
+			delta.y=del[j];
+			n=InnerLoop(lim[i],lim[j],delta,coord, coord1, data, data1, n);
+		}
+}
+
+unsigned CellDiv::InnerLoop(tuint2 out, tuint2 inn, tfloat2 delta,tfloat3* coord, tfloat3 *coord1, tfloat5* data, tfloat5* data1,unsigned n){
+	for (unsigned i=out.x; i < out.y; i++)
+		for (unsigned j=inn.x; j<inn.y; j++){
+
+			unsigned pmin=BeginCellTemp[i+j*Nc];
+			unsigned pmax=pmin+PartsincellTemp[i+j*Nc];
+
+			for (unsigned p=pmin; p<pmax; p++){
+			coord[n].x=coord1[p].x+delta.x;
+			coord[n].z=coord1[p].z+delta.y;
+			data[n]=data1[p];
+			n++;
 			}
-		for (unsigned j=0; j<q; j++)
-				for(unsigned i=0; i<Nc; i++) {
-					unsigned index=i+j*Nc;
-					unsigned index1=i+(Nc-1-j)*Nc;
-					unsigned pmin=BeginCellTemp[index];
-					unsigned pmax=pmin+PartsincellTemp[index];
-					unsigned pmin1=BeginCellTemp[index1];
-					unsigned pmax1=pmin1+PartsincellTemp[index1];
 
-
-					for (unsigned p=pmin; p<pmax; p++){
-						coord[Np+n].x=coord1[p].x;
-						coord[Np+n].z=coord1[p].z+L;
-						data[Np+n]=data1[p];
-						n++;
-					}
-
-					for (unsigned p=pmin1; p<pmax1; p++){
-						coord[Np+n].x=coord1[p].x;
-						coord[Np+n].z=coord1[p].z-L;
-						data[Np+n]=data1[p];
-						n++;
-					}
-				}
-		for (unsigned i=0; i<q; i++)
-					for(unsigned j=0; j<q; j++) {
-						unsigned index=i+j*Nc;
-						unsigned index1=(Nc-1)-i+j*Nc;
-						unsigned pmin=BeginCellTemp[index];
-						unsigned pmax=pmin+PartsincellTemp[index];
-						unsigned pmin1=BeginCellTemp[index1];
-						unsigned pmax1=pmin1+PartsincellTemp[index1];
-
-						for (unsigned p=pmin; p<pmax; p++){
-							coord[Np+n].x=coord1[p].x+L;
-							coord[Np+n].z=coord1[p].z+L;
-							data[Np+n]=data1[p];
-							n++;
-						}
-
-						for (unsigned p=pmin1; p<pmax1; p++){
-							coord[Np+n].x=coord1[p].x-L;
-							coord[Np+n].z=coord1[p].z+L;
-							data[Np+n]=data1[p];
-							n++;
-						}
-
-					}
-		for (unsigned i=0; i<q; i++)
-							for(unsigned j=Nc-q; j<Nc; j++) {
-								unsigned index=i+j*Nc;
-								unsigned index1=(Nc-1)-i+j*Nc;
-								unsigned pmin=BeginCellTemp[index];
-								unsigned pmax=pmin+PartsincellTemp[index];
-								unsigned pmin1=BeginCellTemp[index1];
-								unsigned pmax1=pmin1+PartsincellTemp[index1];
-
-								for (unsigned p=pmin; p<pmax; p++){
-									coord[Np+n].x=coord1[p].x+L;
-									coord[Np+n].z=coord1[p].z-L;
-									data[Np+n]=data1[p];
-									n++;
-								}
-
-								for (unsigned p=pmin1; p<pmax1; p++){
-									coord[Np+n].x=coord1[p].x-L;
-									coord[Np+n].z=coord1[p].z-L;
-									data[Np+n]=data1[p];
-									n++;
-								}
-
-							}
+		}
+	return n;
 }
 
 void CellDiv::ChangeNp(unsigned np){

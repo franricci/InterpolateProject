@@ -17,7 +17,7 @@ public:
 	Csv_Reader(const std::string& filename);
 
 	unsigned numberOfLines();
-	void read_file(pos* cord, dat* data);
+	void read_file(tfloat3* cord, tfloat5* data);
 
 private:
 	std::string FileName;
